@@ -1,0 +1,18 @@
+#######################################################################################################################
+# To expose your kubernetes resources/pod to the public/internet. Here we choose network LB
+#######################################################################################################################
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: public-lb
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: web

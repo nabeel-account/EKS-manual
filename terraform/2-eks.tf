@@ -1,7 +1,8 @@
 #######################################################################################################################
 # Role associated with the EKS CLUSTER
 #######################################################################################################################
-# Action = pricniple user is able to assume other roles.
+# Provide EKS cluster with all the pre-baked Amazon EKS Cluster Policy.
+# - necessary permissions e.g. connecting with AWS autoscaling
 resource "aws_iam_role" "main" {
   name = "eks-cluster-main"
 
@@ -34,13 +35,14 @@ resource "aws_iam_role_policy_attachment" "main-AmazonEKSClusterPolicy" {
 resource "aws_eks_cluster" "main" {
   name     = var.cluster_name
   role_arn = aws_iam_role.main.arn
+  # version = "1.29"
 
   vpc_config {
     subnet_ids = [
-      aws_subnet.my_public_subnet_1.id,
-      aws_subnet.my_public_subnet_2.id,
-      aws_subnet.my_private_subnet_2.id,
-      aws_subnet.my_private_subnet_2.id
+      aws_subnet.public_subnet_a.id,
+      aws_subnet.public_subnet_b.id,
+      aws_subnet.private_subnet_a.id,
+      aws_subnet.private_subnet_b.id
     ]
   }
 

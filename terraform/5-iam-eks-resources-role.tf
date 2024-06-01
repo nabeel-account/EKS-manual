@@ -1,5 +1,5 @@
 #######################################################################################################################
-# Testing the provider before deploying Auto Scaler
+# Specify which EKS service account name will be able to assume this role
 #######################################################################################################################
 data "aws_iam_policy_document" "test_oidc_assume_role_policy" {
   statement {
@@ -10,7 +10,7 @@ data "aws_iam_policy_document" "test_oidc_assume_role_policy" {
       test     = "StringEquals"
       variable = "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:sub"
 
-      # Ensure the ServiceAccount you create is called aws-test and is in the default namespace
+      # Service account able to assume this role is under default namespace and named aws-test
       values   = ["system:serviceaccount:default:aws-test"]
     }
 

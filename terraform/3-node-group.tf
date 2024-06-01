@@ -1,7 +1,7 @@
 #######################################################################################################################
 # Role associated with the Node Group
 #######################################################################################################################
-# Action = pricniple user is able to assume other roles.
+# To provide instance group with pre-based worker nodes policies
 resource "aws_iam_role" "nodes" {
   name = "eks-node-group-nodes"
 
@@ -51,17 +51,17 @@ resource "aws_eks_node_group" "private-nodes" {
   node_role_arn   = aws_iam_role.nodes.arn
 
   subnet_ids = [
-    aws_subnet.my_private_subnet_1.id,
-    aws_subnet.my_private_subnet_2.id
+    aws_subnet.private_subnet_a.id,
+    aws_subnet.private_subnet_b.id
   ]
 
   capacity_type  = "ON_DEMAND"
-  instance_types = ["t2.medium"]
+  instance_types = ["t3.medium"]
 
   # Cluster autoscaler needs to be deployed for this to take effect
   scaling_config {
     desired_size = 1
-    max_size     = 2
+    max_size     = 5
     min_size     = 0
   }
 
@@ -74,16 +74,38 @@ resource "aws_eks_node_group" "private-nodes" {
     role = "default"
   }
 
-  depends_on = [
-    aws_iam_role_policy_attachment.AmazonEKSWorkerNodePolicy,
-    aws_iam_role_policy_attachment.AmazonEKS_CNI_Policy,
-    aws_iam_role_policy_attachment.AmazonEC2ContainerRegistryReadOnly,
-  ]
-
+  ## Create Node Taint
   # taint {
   #   key    = "priority"
   #   value  = "high"
   #   effect = "NO_SCHEDULE"
   # }
 
+  ## Add additional config like changing default ebs volume size or type - see below
+  # launch_template {
+  #   name    = aws_launch_template.eks-with-disks.name
+  #   version = aws_launch_template.eks-with-disks.latest_version
+  # }
+  
+  depends_on = [
+    aws_iam_role_policy_attachment.AmazonEKSWorkerNodePolicy,
+    aws_iam_role_policy_attachment.AmazonEKS_CNI_Policy,
+    aws_iam_role_policy_attachment.AmazonEC2ContainerRegistryReadOnly,
+  ]
 }
+
+## Update the EBS volume used by the EKS node groups
+# resource "aws_launch_template" "eks-with-disks" {
+#   name = "eks-with-disks"
+
+#   key_name = "local-provisioner"
+
+#   block_device_mappings {
+#     device_name = "/dev/xvdb"
+
+#     ebs {
+#       volume_size = 50
+#       volume_type = "gp2"
+#     }
+#   }
+# }

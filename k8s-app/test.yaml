@@ -1,0 +1,30 @@
+#######################################################################################################################
+# Check whether an EKS service account can bind with AWS IAM role
+#######################################################################################################################
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aws-test
+  namespace: default
+
+  # Assign the IAM role with the correct permission for the Pod to use
+  # This role was created under terraform/5-iam.role.tf
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::058264269093:role/test-oidc
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: aws-cli
+  namespace: default
+spec:
+  serviceAccountName: aws-test
+  containers:
+  - name: aws-cli
+    image: amazon/aws-cli
+    command: [ "/bin/bash", "-c", "--" ]
+    args: [ "while true; do sleep 30; done;" ]
+  tolerations:
+  - operator: Exists
+    effect: NoSchedule
